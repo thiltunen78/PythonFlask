@@ -22,5 +22,23 @@
 	{{super()}}
 	<div class="my_container">
 		<h1>Here will be table of your friends</h1>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Address</th>
+					<th>Age</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for item in friends %}
+					<tr>
+						<td>{{item.name}}</td>
+						<td>{{item.address}}</td>
+						<td>{{item.age}}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
 	</div>
 {% endblock %}

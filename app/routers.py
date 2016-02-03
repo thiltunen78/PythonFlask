@@ -1,47 +1,66 @@
 from app import app
 #render_template gives you access to Jinja2 template engine
-from flask import render_template,request,make_response,flash,redirect
-from app.forms import LoginForm
-from app.forms import RegisterForm
+from flask import render_template,request,make_response,flash,redirect,session
+from app.forms import LoginForm,RegisterForm,FriendForm
 from app.db_models import Users
 from app import db
+
+#for sql error handling 
+
 
 @app.route('/',methods=['GET','POST'])
 def index():
 	login = LoginForm()
-	#check if get method
+	#Check if get method
 	if request.method == 'GET':
 		return render_template('template_index.html',form=login)
 	else:
 		#check if form data is valid
 		if login.validate_on_submit():
-			print(login.email.data)
-			print(login.passw.data)
-			return render_template('template_user.html')
+			#Check id correct useranme and password
+			user = Users.query.filter_by(email=login.email.data).filter_by(passw=login.passw.data)
+			print(user)
+			if user.count() == 1:
+				print(user[0])
+				session['user_id'] = user[0].id
+				print(session['user_id'])
+				return render_template('template_user.html')
+			else:
+				flash('Wrong email or password')
+				return render_template('template_index.html',form=login)
 		#form data was not valid
 		else:
-			flash('Give proper information to email ad password fields')
+			flash('Give proper information to email and password fields!')
 			return render_template('template_index.html',form=login)
 
 @app.route('/register',methods=['GET','POST'])
 def registerUser():
-	register = RegisterForm()
-	#check if get method
+	form = RegisterForm()
 	if request.method == 'GET':
-		return render_template('template_register.html',form=register)
+		return render_template('template_register.html',form=form)
 	else:
-		#check if form data is valid
-		if register.validate_on_submit():
-			user = Users(register.email.data,register.passw.data)
-			db.session.add(user)
-			db.session.commit()
-			flash("Name {0} registered".format(register.email.data))
+		if form.validate_on_submit():
+			user = Users(form.email.data,form.passw.data)
+			try:
+				db.session.add(user)
+				db.session.commit()
+			except:
+				db.session.rollback()
+				flash('Username allready in use')
+				return render_template('template_register.html',form=form)
+			flash("Name {0} registered.".format(form.email.data))
 			return redirect('/')
-		#form data was not valid
 		else:
-			flash('invalid email or no password given')
-			return render_template('template_register.html',form=register)
+			flash('Invalid email address or no password given')
+			return render_template('template_register.html',form=form)
+		
 
+@app.route('/friends',methods=['GET','POST'])
+def friends():
+	form = FriendForm()
+	if request.method == 'GET':
+		return render_template('template_friends.html',form=form)
+	
 		
 @app.route('/user/<name>')
 def user(name):

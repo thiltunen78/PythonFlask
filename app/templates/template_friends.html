@@ -2,7 +2,7 @@
 {#replaced by Jinja2 template engine with actual data#}
 
 {% extends 'base.html' %}
-{% block title %}Friends {{super()}}{% endblock %}
+{% block title %}Add Friend {{super()}}{% endblock %}
 {% block head %}
 	{{super()}}
 	<style>
@@ -21,6 +21,18 @@
 {% block body %}
 	{{super()}}
 	<div class="my_container">
-		<h1>Here will be table of your friends</h1>
+		<form action="/friends" method="POST">
+			{{ form.csrf_token }}
+			{{ form.name.label }}
+			{{ form.name(class='form-control') }}
+			
+			{{ form.address.label }}
+			{{ form.address(class='form-control') }}
+			
+			{{ form.age.label }}
+			{{ form.age(class='form-control') }}
+			
+			{{form.submit(class='btn btn-default')}}
+		</form>
 	</div>
 {% endblock %}

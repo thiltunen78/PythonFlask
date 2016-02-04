@@ -4,6 +4,7 @@ from flask import render_template,request,make_response,flash,redirect,session
 from app.forms import LoginForm,RegisterForm,FriendForm
 from app.db_models import Users,Friends
 from app import db
+from flask.ext.bcrypt import check_password_hash
 
 #for sql error handling 
 
@@ -17,14 +18,14 @@ def index():
 	else:
 		#check if form data is valid
 		if login.validate_on_submit():
-			#Check id correct useranme and password
-			user = Users.query.filter_by(email=login.email.data).filter_by(passw=login.passw.data)
+			#Check if correct useranme
+			user = Users.query.filter_by(email=login.email.data)
 			print(user)
-			if user.count() == 1:
+			if (user.count() == 1) and (check_password_hash(user[0].passw,login.passw.data)):
 				print(user[0])
 				session['user_id'] = user[0].id
 				session['isLogged'] = True
-				
+				#tapa 1
 				friends = Friends.query.filter_by(user_id=user[0].id)
 				return render_template('template_user.html',isLogged=True,friends=friends)
 			else:
@@ -70,9 +71,7 @@ def friends():
 			temp = Friends(form.name.data,form.address.data,form.age.data,session['user_id'])
 			db.session.add(temp)
 			db.session.commit()
-			
-			#friends = Friends.query.filter_by(user_id=session['user_id'])
-			
+			#tapa 2
 			user = Users.query.get(session['user_id'])
 			return render_template('template_user.html',isLogged=True,friends=user.friends)
 		else:
